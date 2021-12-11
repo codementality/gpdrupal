@@ -1,0 +1,7 @@
+#!/bin/bash
+## Description:  Drop existing database to start from scratch
+## Example:  "ddev clean-db"
+
+echo "Dropping current database..."
+  drush -y sql:drop || exit 1;
+echo "Database dropped!"

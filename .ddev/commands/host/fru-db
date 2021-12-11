@@ -1,0 +1,9 @@
+#!/bin/bash
+## Description: Download database from Fruition Cloud backups via fru cli, and import into database service.  Note:  If a file already exists in this location, it will be overwritten.
+## Usage: fru-db <database>
+## Example: ddev fru-db danuser
+echo "Downloading specified database from Fruition Cloud backups..."
+fru cloud:db:dl $@ --filename=./databases/database.sql.gz || exit 1;
+echo "Importing downloaded database..."
+gzip -dc ./databases/database.sql.gz | ddev import-db || exit 1;
+echo "Database imported!"

@@ -1,0 +1,6 @@
+#!/bin/bash
+## Description: Run fru-cli commands on the host machine
+## Usage: fru [flags] [args]
+## Example: "ddev fru cloud:db:dl" or "ddev fru auth:login"
+
+fru $@

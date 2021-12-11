@@ -1,0 +1,81 @@
+#!/bin/bash
+
+set -e
+## Initialization commands for initializing a Drupal project
+
+## Set DB Environment Variables.  These are used in bash scripting for initializing
+## the DB, and also to simulate environment variables in Fruition's cloud host environment
+DB_HOST=db 
+DB_PORT=3306
+
+## Composer Initialization process
+## If composer.lock file exists, run "composer install"; otherwise
+## run "composer update" to create lockfile from composer.json
+COMPOSER_LOCK_FILE=composer.lock
+COMPOSER_JSON_FILE=composer.json
+
+## Drupal Config Sync directory
+DRUPAL_CONFIG_SYNC=../config/drupal/sync
+
+if [ -f "$COMPOSER_LOCK_FILE" ]; then
+  echo "Initialize project with contents of composer.lock file"
+  composer install --no-interaction --no-progress --apcu-autoloader || exit 1;
+else
+  if [ -f "$COMPOSER_JSON_FILE" ]; then
+    echo "Initializing project with contents of composer.json file"
+    composer update --no-interaction --no-progress --apcu-autoloader || exit 1;
+  else
+    echo "Error: Project cannot be initialized without a composer.json and/or composer.lock file.  Exiting..."
+    exit 0;
+  fi
+fi
+
+if [[ $ENVIRONMENT == 'DEV' || $IS_DDEV_PROJECT ]]; then
+    wait-for-it $DB_HOST:$DB_PORT --timeout=0 --strict -- echo "database service is up, proceeding..."
+    QUERYRESULTS=$(drush sql-query 'show tables like "users";');
+    if [[ $QUERYRESULTS != "users" ]]; then
+        ## If database does not exist, initialize Drupal with drush site-install
+        ## Checks for config in sync directory, uses existing configuration if it exists
+        config_count=`ls -1 $DRUPAL_CONFIG_SYNC/*.yml 2>/dev/null | wc -l`
+        if [[ $config_count == 0 ]]; then 
+          drush -y site:install minimal --account-name=admin --account-pass=admin
+        else
+          drush -y site:install minimal --account-name=admin --account-pass=admin --existing-config
+        fi
+        LOGERRORS=$(drush ws --severity=Error)
+        if [[ $LOGERRORS ]]; then
+        	echo "Errors detected during site initialization.  Check logs for details"
+        	echo "Errors: $LOGERRORS"
+        	exit 1
+        fi
+        LOGWARNINGS=$(drush ws --severity=Warning)
+        if [[ $LOGWARNINGS ]]; then
+        	echo "Warnings detected during site initialization.  Check logs for details"
+        	echo "Warning: $LOGWARNINGS"
+        	exit 1
+        fi
+        LOGNOTICES=$(drush ws --severity=Notice)
+        if [[ $LOGNOTICES ]]; then
+        	echo "Notices detected during site initialization.  Check logs for details"
+        	echo "Notice: $LOGNOTICES"
+        	exit 1
+        fi
+    fi
+fi
+
+config_count=`ls -1 $DRUPAL_CONFIG_SYNC/*.yml 2>/dev/null | wc -l`
+## Runs drush deploy if configuration exists; otherwise runs all steps of "drush deploy" without config import.
+if [[ $config_count != 0 ]]; then
+  drush -y deploy
+else
+  drush -y updatedb --no-cache-clear
+  drush -y cache-rebuild
+  drush -y deploy:hook
+fi
+
+# Removes information messages from DBLog tables after installation or update
+drush -y wd-del --severity=Info
+
+if [[ $ENVIRONMENT == 'DEV' || $ENVIRONMENT == 'STAGING' ]]; then
+  drush en stage_file_proxy -y
+fi
