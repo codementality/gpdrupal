@@ -195,3 +195,4 @@ web_environment: []
 # post-import-db:
 #   - exec: drush cr
 #   - exec: drush updb
+webimage_extra_packages: [wait-for-it]
