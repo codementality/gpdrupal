@@ -1,6 +1,6 @@
 {
-    "name": "drupal/recommended-project",
-    "description": "Project template for Drupal 9 projects with a relocated document root",
+    "name": "codementality/drupal-project",
+    "description": "Project template for Drupal 9.3",
     "type": "project",
     "license": "GPL-2.0-or-later",
     "homepage": "https://www.drupal.org/project/drupal",
@@ -8,39 +8,74 @@
         "docs": "https://www.drupal.org/docs/user_guide/en/index.html",
         "chat": "https://www.drupal.org/node/314178"
     },
-    "repositories": [
-        {
+    "repositories": {
+        "drupal": {
             "type": "composer",
             "url": "https://packages.drupal.org/8"
+        },
+        "assets": {
+            "type": "composer",
+            "url": "https://asset-packagist.org"
         }
-    ],
+    },
     "require": {
         "composer/installers": "^1.9",
+        "cweagans/composer-patches": "^1.6",
         "drupal/core-composer-scaffold": "^9.3",
         "drupal/core-project-message": "^9.3",
         "drupal/core-recommended": "^9.3",
-        "drush/drush": "^10.6"
+        "drush/drush": "^10.6",
+        "oomphinc/composer-installers-extender": "^2"
+    },
+    "require-dev": {
+        "drupal/core-dev": "^9.3",
+        "mglaman/phpstan-drupal": "^0.12.6",
+        "symfony/console": "^3|^4|^5"
     },
     "conflict": {
         "drupal/drupal": "*"
     },
-    "minimum-stability": "stable",
+    "minimum-stability": "dev",
     "prefer-stable": true,
     "config": {
         "sort-packages": true
     },
     "extra": {
+        "exit-on-patch-failure": true,
         "drupal-scaffold": {
             "locations": {
                 "web-root": "web/"
             }
         },
+        "file-mapping": {
+            "[web-root]/.ht.router.php": false,
+            "[web-root]/INSTALL.txt": false,
+            "[web-root]/LICENSE.txt": false,
+            "[web-root]/README.txt": false,
+            "[web-root]/example.gitignore": false,
+            "[web-root]/sites/development.services.yml": false,
+            "[web-root]/web.config": false
+        },
+        "initial": {
+            ".htaccess": "web/.htaccess",
+            "robots.txt": "web/robots.txt",
+            "sites/default/default.services.yml": "web/sites/default/default.services.yml",
+            "sites/default/default.settings.php": "web/sites/default/default.settings.php"
+        },
+        "omit-defaults": true,
+        "installer-types": [
+            "component",
+            "bower-asset",
+            "npm-asset"
+        ],
         "installer-paths": {
             "web/core": [
                 "type:drupal-core"
             ],
             "web/libraries/{$name}": [
-                "type:drupal-library"
+                "type:drupal-library",
+                "type:npm-asset",
+                "type:bower-asset"
             ],
             "web/modules/contrib/{$name}": [
                 "type:drupal-module"
@@ -64,26 +99,22 @@
                 "type:drupal-custom-theme"
             ]
         },
-        "drupal-core-project-message": {
-            "include-keys": [
-                "homepage",
-                "support"
-            ],
-            "post-create-project-cmd-message": [
-                "<bg=blue;fg=white>                                                         </>",
-                "<bg=blue;fg=white>  Congratulations, you’ve installed the Drupal codebase  </>",
-                "<bg=blue;fg=white>  from the drupal/recommended-project template!          </>",
-                "<bg=blue;fg=white>                                                         </>",
-                "",
-                "<bg=yellow;fg=black>Next steps</>:",
-                "  * Install the site: https://www.drupal.org/docs/8/install",
-                "  * Read the user guide: https://www.drupal.org/docs/user_guide/en/index.html",
-                "  * Get support: https://www.drupal.org/support",
-                "  * Get involved with the Drupal community:",
-                "      https://www.drupal.org/getting-involved",
-                "  * Remove the plugin that prints this message:",
-                "      composer remove drupal/core-project-message"
-            ]
+        "patchLevel": {
+            "drupal/core": "-p2"
+        },
+        "patches": {
+            "drupal/core": {
+                "Issue #3193759: Demote user authentication log entries from \"notice\" to \"info\".": "https://www.drupal.org/files/issues/2021-02-10/demote-user-log-3193759-6.patch",
+                "Issue #2501719: Remove clearstatcache() call from LocalStream.": "https://www.drupal.org/files/issues/remove-clearstatcache-2501719-10.patch",
+                "Issue #2942160: Rationalize image widget validation error messages": "https://www.drupal.org/files/issues/2020-09-18/2942160-27_0.patch",
+                "Issue #2603726: Uri should be required base field for file entities": "https://www.drupal.org/files/issues/2020-10-19/Uri-should-be-required-2603726-19.patch",
+                "Issue #3171835: (Claro) Field Groups marked as required are missing red asterisk": "https://www.drupal.org/files/issues/2021-01-07/3171835-13.patch",
+                "Issue #2993647: Correctly determine when to display fields as inline": "https://www.drupal.org/files/issues/2020-10-15/inline-field.2993647-86.patch",
+                "Issue #2856823: delete-form and edit-form links in header for anonymous users": "https://www.drupal.org/files/issues/2021-01-06/2856823-55__core-9.2.x.patch",
+                "Issue #3126783: Image align center not working": "https://www.drupal.org/files/issues/2021-01-07/3126783-64.patch",
+                "Issue #2582797: [Regression] login link has no destination=drupalSettings.path, so dumps you on the profile": "https://www.drupal.org/files/issues/2021-09-10/core-login-destination-2582797-141_0.patch",
+                "Internal: Reduce log level for content entity deletion from notice to info": "patches/reduce-content-entity-delete-log-message-to-info.patch"
+            }
         }
     }
 }
