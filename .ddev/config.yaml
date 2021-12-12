@@ -15,6 +15,7 @@ mutagen_enabled: false
 use_dns_when_possible: true
 composer_version: "2"
 web_environment: []
+webimage_extra_packages: [wait-for-it]
 
 # Key features of ddev's config.yaml:
 
@@ -195,4 +196,3 @@ web_environment: []
 # post-import-db:
 #   - exec: drush cr
 #   - exec: drush updb
-webimage_extra_packages: [wait-for-it]
