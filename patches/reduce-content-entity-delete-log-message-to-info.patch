@@ -1,0 +1,13 @@
+diff --git a/core/lib/Drupal/Core/Entity/EntityDeleteFormTrait.php b/core/lib/Drupal/Core/Entity/EntityDeleteFormTrait.php
+index 7832a2590e..c3276eda3e 100644
+--- a/core/lib/Drupal/Core/Entity/EntityDeleteFormTrait.php
++++ b/core/lib/Drupal/Core/Entity/EntityDeleteFormTrait.php
+@@ -109,7 +109,7 @@ protected function getRedirectUrl() {
+    */
+   protected function logDeletionMessage() {
+     $entity = $this->getEntity();
+-    $this->logger($entity->getEntityType()->getProvider())->notice('The @entity-type %label has been deleted.', [
++    $this->logger($entity->getEntityType()->getProvider())->info('The @entity-type %label has been deleted.', [
+       '@entity-type' => $entity->getEntityType()->getSingularLabel(),
+       '%label' => $entity->label(),
+     ]);
