@@ -75,7 +75,3 @@ fi
 
 # Removes information messages from DBLog tables after installation or update
 drush -y wd-del --severity=Info
-
-if [[ $ENVIRONMENT == 'DEV' || $ENVIRONMENT == 'STAGING' ]]; then
-  drush en stage_file_proxy -y
-fi
